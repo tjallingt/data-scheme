@@ -2,7 +2,9 @@
 
 // This file defines all Little Endian number parsers
 
-function uint(size) {
+import { DataType } from './data-type';
+
+function uint(size: number): DataType<number> {
   return {
     staticSize: size,
 
@@ -19,7 +21,7 @@ function uint(size) {
   };
 }
 
-function int(size) {
+function int(size: number): DataType<number> {
   return {
     staticSize: size,
 
@@ -37,7 +39,7 @@ function int(size) {
 }
 
 const SIZE_FLOAT = 4;
-const float = {
+export const float: DataType<number> = {
   staticSize: SIZE_FLOAT,
 
   fromBuffer(buffer, offset) {
@@ -52,8 +54,8 @@ const float = {
   },
 };
 
-const SIZE_DOUBLE = 4;
-const double = {
+const SIZE_DOUBLE = 8;
+export const double: DataType<number> = {
   staticSize: SIZE_DOUBLE,
 
   fromBuffer(buffer, offset) {
@@ -68,19 +70,14 @@ const double = {
   },
 };
 
-module.exports = {
-  uint16: uint(2),
-  uint24: uint(3),
-  uint32: uint(4),
-  uint40: uint(5),
-  uint48: uint(6),
+export const uint16 = uint(2);
+export const uint24 = uint(3);
+export const uint32 = uint(4);
+export const uint40 = uint(5);
+export const uint48 = uint(6);
 
-  int16: int(2),
-  int24: int(3),
-  int32: int(4),
-  int40: int(5),
-  int48: int(6),
-
-  float,
-  double,
-};
+export const int16 = int(2);
+export const int24 = int(3);
+export const int32 = int(4);
+export const int40 = int(5);
+export const int48 = int(6);

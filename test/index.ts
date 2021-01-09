@@ -1,8 +1,8 @@
 'use strict';
 
-const assert = require('assert').strict;
+import { strict as assert } from 'assert';
 
-const { define, types } = require('../lib/index.js');
+import { define, types } from '../src/index';
 
 describe('data-scheme can define parsers', () => {
   it('supports simple types', () => {

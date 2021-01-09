@@ -2,15 +2,13 @@
 
 // This file defines all ArrayLike parsers
 
-const NOT_STATIC = 0;
+import { DataType, NOT_STATIC } from './data-type';
 
-// ====================================================================
-
-function fixedSizeBuffer(size) {
+export function fixedSizeBuffer(size: number): DataType<Buffer> {
   return {
     staticSize: size,
 
-    fromBuffer(buffer, offset, context) {
+    fromBuffer(buffer, offset) {
       const value = buffer.slice(offset, offset + size);
       return { size: value.length, value };
     },
@@ -22,7 +20,7 @@ function fixedSizeBuffer(size) {
   };
 }
 
-function buffer() {
+export function buffer(): DataType<Buffer> {
   return {
     staticSize: NOT_STATIC,
 
@@ -39,11 +37,11 @@ function buffer() {
 
 // ====================================================================
 
-function fixedSizeString(size, encoding = 'utf8') {
+export function fixedSizeString(size: number, encoding: BufferEncoding = 'utf8'): DataType<string> {
   return {
     staticSize: size,
 
-    fromBuffer(buffer, offset, context) {
+    fromBuffer(buffer, offset) {
       const value = buffer.toString(encoding, offset, offset + size);
       return { size, value };
     },
@@ -55,7 +53,7 @@ function fixedSizeString(size, encoding = 'utf8') {
   };
 }
 
-function string(encoding = 'utf8') {
+export function string(encoding: BufferEncoding = 'utf8'): DataType<string> {
   return {
     staticSize: NOT_STATIC,
 
@@ -72,7 +70,7 @@ function string(encoding = 'utf8') {
 
 // ====================================================================
 
-function array(type) {
+export function array<T>(type: DataType<T>): DataType<Array<T>> {
   if (type.staticSize === NOT_STATIC) {
     throw new Error('Cannot create an array out of elements whose sizes are not static.');
   }
@@ -100,9 +98,7 @@ function array(type) {
       let parts = [];
 
       for (const item of value) {
-        const part = type.toBuffer(item, {
-          /** context */
-        });
+        const part = type.toBuffer(item);
 
         parts.push(part);
       }
