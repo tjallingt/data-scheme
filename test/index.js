@@ -4,8 +4,8 @@ const assert = require('assert').strict;
 
 const { define, types } = require('../lib/index.js');
 
-describe('data-scheme define and types', () => {
-  it('can define a simple type', () => {
+describe('data-scheme can define parsers', () => {
+  it('supports simple types', () => {
     const scheme = define(types.struct({
       first: types.byte,
       second: types.byte,
@@ -28,7 +28,7 @@ describe('data-scheme define and types', () => {
 
   // ====================================================================
 
-  it('can define a type with an unsized buffer', () => {
+  it('supports an unsized buffer', () => {
     const scheme = define(types.struct({
       buf: types.buffer(),
     }));
@@ -48,7 +48,7 @@ describe('data-scheme define and types', () => {
 
   // ====================================================================
 
-  it('can define a type with a unsized buffer with parameters before and after', () => {
+  it('supports an unsized buffer with parameters before and after', () => {
     const scheme = define(types.struct({
       before: types.byte,
       buf: types.buffer(),
@@ -74,7 +74,7 @@ describe('data-scheme define and types', () => {
 
   // ====================================================================
 
-  it('can define a type with a buffer with static size', () => {
+  it('supports a buffer with static size', () => {
     const scheme = define(types.struct({
       buf: types.fixedSizeBuffer(3),
     }));
@@ -94,7 +94,7 @@ describe('data-scheme define and types', () => {
 
   // ====================================================================
 
-  it('can define a type with grouped bits', () => {
+  it('supports grouped bits', () => {
     const scheme = define(types.struct({
       properties: types.groupBits({
         first: 4,
@@ -126,7 +126,7 @@ describe('data-scheme define and types', () => {
 
   // ====================================================================
 
-  it('can define a type with an array of uint', () => {
+  it('supports an array of uint', () => {
     const scheme = define(types.struct({
       list: types.array(types.bigEndian.uint16),
     }));
@@ -146,7 +146,7 @@ describe('data-scheme define and types', () => {
 
   // ====================================================================
 
-  it('can define a type with an array of structs', () => {
+  it('supports an array of structs', () => {
     const scheme = define(types.struct({
       list: types.array(types.struct({ value: types.byte })),
     }));
@@ -166,7 +166,7 @@ describe('data-scheme define and types', () => {
 
   // ====================================================================
 
-  it('can define a type with an array with parameters before and after', () => {
+  it('supports an array with parameters before and after', () => {
     const scheme = define(types.struct({
       before: types.byte,
       list: types.array(
