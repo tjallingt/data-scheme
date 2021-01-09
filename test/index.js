@@ -123,4 +123,81 @@ describe('data-scheme define and types', () => {
 
     assert.deepStrictEqual(output, Buffer.from([0b1001_0011, 0b1100_0110]));
   });
+
+  // ====================================================================
+
+  it('can define a type with an array of uint', () => {
+    const scheme = define(types.struct({
+      list: types.array(types.bigEndian.uint16),
+    }));
+
+    const result = scheme.fromBuffer(Buffer.from('010203040506', 'hex'));
+
+    assert.deepStrictEqual(result, {
+      list: [0x0102, 0x0304, 0x0506],
+    });
+
+    const output = scheme.toBuffer({
+      list: [0x0102, 0x0304, 0x0506],
+    });
+
+    assert.deepStrictEqual(output, Buffer.from('010203040506', 'hex'));
+  });
+
+  // ====================================================================
+
+  it('can define a type with an array of structs', () => {
+    const scheme = define(types.struct({
+      list: types.array(types.struct({ value: types.byte })),
+    }));
+
+    const result = scheme.fromBuffer(Buffer.from('0102', 'hex'));
+
+    assert.deepStrictEqual(result, {
+      list: [{ value: 0x01 }, { value: 0x02 }],
+    });
+
+    const output = scheme.toBuffer({
+      list: [{ value: 0x01 }, { value: 0x02 }],
+    });
+
+    assert.deepStrictEqual(output, Buffer.from('0102', 'hex'));
+  });
+
+  // ====================================================================
+
+  it('can define a type with an array with parameters before and after', () => {
+    const scheme = define(types.struct({
+      before: types.byte,
+      list: types.array(
+        types.struct({
+          one: types.byte,
+          two: types.byte,
+        })
+      ),
+      after: types.bigEndian.uint16,
+    }));
+
+    const result = scheme.fromBuffer(Buffer.from('01020304050607', 'hex'));
+
+    assert.deepStrictEqual(result, {
+      before: 0x01,
+      list: [
+        { one: 0x02, two: 0x03 },
+        { one: 0x04, two: 0x05 },
+      ],
+      after: 0x0607,
+    });
+
+    const output = scheme.toBuffer({
+      before: 0x01,
+      list: [
+        { one: 0x02, two: 0x03 },
+        { one: 0x04, two: 0x05 },
+      ],
+      after: 0x0607,
+    });
+
+    assert.deepStrictEqual(output, Buffer.from('01020304050607', 'hex'));
+  });
 });
