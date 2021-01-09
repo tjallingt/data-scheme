@@ -91,4 +91,36 @@ describe('data-scheme define and types', () => {
 
     assert.deepStrictEqual(output, Buffer.from('010203', 'hex'));
   });
+
+  // ====================================================================
+
+  it('can define a type with grouped bits', () => {
+    const scheme = define(types.struct({
+      properties: types.groupBits({
+        first: 4,
+        second: 8,
+        third: 4,
+      }),
+    }));
+
+    const result = scheme.fromBuffer(Buffer.from([0b1001_0011, 0b1100_0110]));
+
+    assert.deepStrictEqual(result, {
+      properties: {
+        first: 0b1001,
+        second: 0b0011_1100,
+        third: 0b0110,
+      },
+    });
+
+    const output = scheme.toBuffer({
+      properties: {
+        first: 0b1001,
+        second: 0b0011_1100,
+        third: 0b0110,
+      },
+    });
+
+    assert.deepStrictEqual(output, Buffer.from([0b1001_0011, 0b1100_0110]));
+  });
 });
