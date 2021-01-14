@@ -13,9 +13,9 @@ export function fixedSizeBuffer(size: number): DataType<Buffer> {
       return { size: value.length, value };
     },
 
-    toBuffer(value) {
+    toBuffer(data) {
       // TODO: warn we are discarding a part of the value?
-      return value.slice(0, size);
+      return data.slice(0, size);
     },
   };
 }
@@ -29,8 +29,8 @@ export function buffer(): DataType<Buffer> {
       return { size: value.length, value };
     },
 
-    toBuffer(value) {
-      return value;
+    toBuffer(data) {
+      return data;
     },
   };
 }
@@ -46,9 +46,9 @@ export function fixedSizeString(size: number, encoding: BufferEncoding = 'utf8')
       return { size, value };
     },
 
-    toBuffer(value) {
+    toBuffer(data) {
       // TODO: warn we are discarding a part of the value?
-      return Buffer.from(value, encoding).slice(0, size);
+      return Buffer.from(data, encoding).slice(0, size);
     },
   };
 }
@@ -62,8 +62,8 @@ export function string(encoding: BufferEncoding = 'utf8'): DataType<string> {
       return { size: value.length, value: value.toString(encoding) };
     },
 
-    toBuffer(value) {
-      return Buffer.from(value, encoding);
+    toBuffer(data) {
+      return Buffer.from(data, encoding);
     },
   };
 }
@@ -83,9 +83,7 @@ export function array<T>(type: DataType<T>): DataType<Array<T>> {
       let currentOffset = offset;
 
       while (currentOffset + type.staticSize <= buffer.length - context.reservedSize) {
-        const { value, size } = type.fromBuffer(buffer, currentOffset, {
-          /** context */
-        });
+        const { value, size } = type.fromBuffer(buffer, currentOffset);
 
         result.push(value);
         currentOffset += size;
@@ -94,10 +92,10 @@ export function array<T>(type: DataType<T>): DataType<Array<T>> {
       return { size: currentOffset - offset, value: result };
     },
 
-    toBuffer(value) {
+    toBuffer(data) {
       let parts = [];
 
-      for (const item of value) {
+      for (const item of data) {
         const part = type.toBuffer(item);
 
         parts.push(part);

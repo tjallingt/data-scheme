@@ -13,9 +13,9 @@ function uint(size: number): DataType<number> {
       return { size, value };
     },
 
-    toBuffer(value) {
+    toBuffer(data) {
       const result = Buffer.allocUnsafe(size);
-      result.writeUIntBE(value, 0, size);
+      result.writeUIntBE(data, 0, size);
       return result;
     },
   };
@@ -30,9 +30,9 @@ function int(size: number): DataType<number> {
       return { size, value };
     },
 
-    toBuffer(value) {
+    toBuffer(data) {
       const result = Buffer.allocUnsafe(size);
-      result.writeIntBE(value, 0, size);
+      result.writeIntBE(data, 0, size);
       return result;
     },
   };
@@ -47,9 +47,9 @@ export const float: DataType<number> = {
     return { size: SIZE_FLOAT, value };
   },
 
-  toBuffer(value) {
+  toBuffer(data) {
     const result = Buffer.allocUnsafe(SIZE_FLOAT);
-    result.writeFloatBE(value);
+    result.writeFloatBE(data);
     return result;
   },
 };
@@ -63,9 +63,9 @@ export const double: DataType<number> = {
     return { size: SIZE_DOUBLE, value };
   },
 
-  toBuffer(value) {
+  toBuffer(data) {
     const result = Buffer.allocUnsafe(SIZE_DOUBLE);
-    result.writeDoubleBE(value);
+    result.writeDoubleBE(data);
     return result;
   },
 };

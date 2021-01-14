@@ -37,12 +37,15 @@ function struct<T extends Scheme>(scheme: T): DataType<ResultObjectOf<T>> {
       return { size: currentOffset - offset, value: result };
     },
 
-    toBuffer(value) {
+    toBuffer(data) {
       let parts = [];
 
       for (let [name, type] of Object.entries(scheme)) {
+        // @ts-ignore we should be able to index into this type
+        const current = data[name];
+        const part = type.toBuffer(current);
+
         // TODO: handle optional/undefined
-        const part = type.toBuffer(value[name]);
 
         parts.push(part);
       }
@@ -60,9 +63,9 @@ const byte: DataType<number> = {
     return { size: 1, value };
   },
 
-  toBuffer(value) {
+  toBuffer(data) {
     const result = Buffer.allocUnsafe(1);
-    result.writeUInt8(value, 0);
+    result.writeUInt8(data, 0);
     return result;
   },
 };
@@ -75,9 +78,9 @@ const signedByte: DataType<number> = {
     return { size: 1, value };
   },
 
-  toBuffer(value) {
+  toBuffer(data) {
     const result = Buffer.allocUnsafe(1);
-    result.writeInt8(value, 0);
+    result.writeInt8(data, 0);
     return result;
   },
 };
@@ -113,7 +116,7 @@ function groupBits<T extends Record<string, number>>(scheme: T): DataType<T> {
       return { size, value: result };
     },
 
-    toBuffer(value) {
+    toBuffer(data) {
       let result = Buffer.alloc(size);
       let currentBitPosition = 0;
 
@@ -129,7 +132,7 @@ function groupBits<T extends Record<string, number>>(scheme: T): DataType<T> {
         const byteLength = endByte - startByte;
         const byteValue = result.readUIntBE(startByte, byteLength);
 
-        const byteResult = (value[name] & bitMask) << bitShift;
+        const byteResult = (data[name] & bitMask) << bitShift;
 
         result.writeUIntBE(byteValue | byteResult, startByte, byteLength);
         currentBitPosition = finalBitPosition;
@@ -157,8 +160,8 @@ export function define<T>(type: DataType<T>) {
       return value;
     },
 
-    toBuffer(value: T): Buffer {
-      return type.toBuffer(value);
+    toBuffer(data: T): Buffer {
+      return type.toBuffer(data);
     },
   };
 }
