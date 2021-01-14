@@ -12,8 +12,12 @@ type ResultObjectOf<T extends Scheme> = {
 };
 
 function struct<T extends Scheme>(scheme: T): DataType<ResultObjectOf<T>> {
-  const staticSize = Object.values(scheme).reduce((sum, type) => sum + type.staticSize, 0);
-  const isStatic = Object.values(scheme).every((type) => type.staticSize !== NOT_STATIC);
+  let staticSize = 0;
+  let isStatic = true;
+  for (const type of Object.values(scheme)) {
+    if (type.staticSize === NOT_STATIC) isStatic = false;
+    staticSize += type.staticSize;
+  }
 
   return {
     staticSize: isStatic ? staticSize : NOT_STATIC,
