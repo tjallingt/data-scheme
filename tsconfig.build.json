@@ -1,0 +1,10 @@
+// This tsconfig is the one used to build the project
+// it is ignored by the language service
+{
+  "extends": "@tsconfig/node12/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "build",
+    "declaration": true,
+  },
+  "include": ["src/**/*"]
+}

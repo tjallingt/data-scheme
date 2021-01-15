@@ -5,12 +5,13 @@
   "main": "build/index.js",
   "scripts": {
     "test": "mocha --require ts-node/esm --extension ts",
-    "build": "tsc"
+    "build": "tsc -p tsconfig.build.json"
   },
   "author": "tjallingt",
   "license": "ISC",
   "devDependencies": {
     "@types/mocha": "^8.2.0",
+    "@tsconfig/node12": "^1.0.7",
     "@types/node": "^14.14.20",
     "mocha": "^8.2.1",
     "ts-node": "^9.1.1",
