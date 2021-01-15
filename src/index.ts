@@ -160,7 +160,9 @@ export const types = {
 export function define<T>(type: DataType<T>) {
   return {
     fromBuffer(buffer: Buffer): T {
-      const { value } = type.fromBuffer(buffer, 0);
+      const { value } = type.fromBuffer(buffer, 0, {
+        reservedSize: buffer.length,
+      });
       return value;
     },
 

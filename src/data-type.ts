@@ -1,6 +1,10 @@
-export interface DataType<T> {
+type ReadContext = {
+  reservedSize: number,
+}
+
+export type DataType<T> = {
   staticSize: number;
-  fromBuffer(buffer: Buffer, offset: number, context?: any): { size: number; value: T };
+  fromBuffer(buffer: Buffer, offset: number, context: ReadContext): { size: number; value: T };
   toBuffer(data: T): Buffer;
 }
 

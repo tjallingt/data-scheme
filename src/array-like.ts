@@ -83,7 +83,9 @@ export function array<T>(type: DataType<T>): DataType<Array<T>> {
       let currentOffset = offset;
 
       while (currentOffset + type.staticSize <= buffer.length - context.reservedSize) {
-        const { value, size } = type.fromBuffer(buffer, currentOffset);
+        const { value, size } = type.fromBuffer(buffer, currentOffset, {
+          reservedSize: 0, // TODO: reading reservedSize is not supported in array
+        });
 
         result.push(value);
         currentOffset += size;
