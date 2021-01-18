@@ -72,14 +72,14 @@ export function string(encoding: BufferEncoding = 'utf8'): DataType<string> {
 
 export function array<T>(type: DataType<T>): DataType<Array<T>> {
   if (type.staticSize === NOT_STATIC) {
-    throw new Error('Cannot create an array out of elements whose sizes are not static.');
+    throw new Error('Cannot create an "array" from a type whose size is not static.');
   }
 
   return {
     staticSize: NOT_STATIC,
 
     fromBuffer(buffer, offset, context) {
-      let result = [];
+      let result: Array<T> = [];
       let currentOffset = offset;
 
       while (currentOffset + type.staticSize <= buffer.length - context.reservedSize) {
@@ -95,7 +95,7 @@ export function array<T>(type: DataType<T>): DataType<Array<T>> {
     },
 
     toBuffer(data) {
-      let parts = [];
+      let parts: Array<Buffer> = [];
 
       for (const item of data) {
         const part = type.toBuffer(item);

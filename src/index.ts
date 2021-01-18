@@ -1,6 +1,6 @@
 'use strict';
 
-import { DataType, NOT_STATIC } from './data-type';
+import { DataType, FixOptional, NOT_STATIC } from './data-type';
 import * as arrayLikes from './array-like';
 import * as bigEndian from './numbers-big-endian';
 import * as littleEndian from './numbers-little-endian';
@@ -11,7 +11,7 @@ type ResultObjectOf<T extends Scheme> = {
   [P in keyof T]: T[P] extends DataType<infer R> ? R : never;
 };
 
-function struct<T extends Scheme>(scheme: T): DataType<ResultObjectOf<T>> {
+function struct<T extends Scheme>(scheme: T): DataType<FixOptional<ResultObjectOf<T>>> {
   let staticSize = 0;
   let isStatic = true;
   for (const type of Object.values(scheme)) {
@@ -147,6 +147,31 @@ function groupBits<T extends Record<string, number>>(scheme: T): DataType<T> {
   };
 }
 
+function optional<T>(type: DataType<T>): DataType<T | undefined> {
+  if (type.staticSize === NOT_STATIC) {
+    throw new Error('Cannot create an "optional" from a type whose size is not static.');
+  }
+
+  return {
+    staticSize: NOT_STATIC,
+
+    fromBuffer(buffer, offset, context) {
+      if (buffer.length >= offset + type.staticSize) {
+        return type.fromBuffer(buffer, offset, context);
+      }
+
+      return { size: 0, value: undefined };
+    },
+
+    toBuffer(data) {
+      if (data) {
+        return type.toBuffer(data);
+      }
+      return Buffer.alloc(0);
+    },
+  };
+}
+
 export const types = {
   byte,
   signedByte,
@@ -154,6 +179,7 @@ export const types = {
   littleEndian,
   ...arrayLikes,
   groupBits,
+  optional,
   struct,
 };
 

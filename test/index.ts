@@ -200,4 +200,38 @@ describe('data-scheme can define parsers', () => {
 
     assert.deepStrictEqual(output, Buffer.from('01020304050607', 'hex'));
   });
+
+  it('supports optional types', () => {
+    const scheme = define(types.struct({
+      before: types.byte,
+      optionalValue: types.optional(types.byte),
+    }));
+
+    const resultPresent = scheme.fromBuffer(Buffer.from('0102', 'hex'));
+
+    assert.deepStrictEqual(resultPresent, {
+      before: 0x01,
+      optionalValue: 0x02,
+    });
+
+    const resultNotPresent = scheme.fromBuffer(Buffer.from('00', 'hex'));
+
+    assert.deepStrictEqual(resultNotPresent, {
+      before: 0x00,
+      optionalValue: undefined,
+    });
+
+    const outputPresent = scheme.toBuffer({
+      before: 0x01,
+      optionalValue: 0x02,
+    });
+
+    assert.deepStrictEqual(outputPresent, Buffer.from('0102', 'hex'));
+
+    const outputNotPresent = scheme.toBuffer({
+      before: 0x01,
+    });
+
+    assert.deepStrictEqual(outputNotPresent, Buffer.from('01', 'hex'));
+  });
 });
