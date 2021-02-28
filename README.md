@@ -1,12 +1,12 @@
 # Data Scheme
 
 This library contains a way to define data schemes that can be parsed to and from buffers.
-The purpose and implementation of this library is similar to `@athombv/data-types`, the reason this library exists is mostly to add support for schemes needed to describe Z-Wave data types.
+The purpose and implementation of this library is similar to `@athombv/data-types` but it makes it easier to add custom data types and improves handling of "unsized" properties.
 
 ## Installation
 
 ```sh
-npm install github:athomb/node-data-scheme
+npm install github:tjallingt/node-data-scheme
 ```
 
 ## Usage
