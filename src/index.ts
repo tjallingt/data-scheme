@@ -5,16 +5,16 @@ import * as arrayLikes from './array-like';
 import * as bigEndian from './numbers-big-endian';
 import * as littleEndian from './numbers-little-endian';
 
-type Scheme = Record<string, DataType<unknown>>;
+type Schema = Record<string, DataType<unknown>>;
 
-type ResultObjectOf<T extends Scheme> = {
+type ResultObjectOf<T extends Schema> = FixOptional<{
   [P in keyof T]: T[P] extends DataType<infer R> ? R : never;
-};
+}>;
 
-function struct<T extends Scheme>(scheme: T): DataType<FixOptional<ResultObjectOf<T>>> {
+function struct<T extends Schema>(schema: T): DataType<ResultObjectOf<T>> {
   let staticSize = 0;
   let isStatic = true;
-  for (const type of Object.values(scheme)) {
+  for (const type of Object.values(schema)) {
     if (type.staticSize === NOT_STATIC) isStatic = false;
     staticSize += type.staticSize;
   }
@@ -23,11 +23,11 @@ function struct<T extends Scheme>(scheme: T): DataType<FixOptional<ResultObjectO
     staticSize: isStatic ? staticSize : NOT_STATIC,
 
     fromBuffer(buffer: Buffer, offset: number) {
-      let result: ResultObjectOf<T> = {} as any;
+      let result = {} as ResultObjectOf<T>;
       let currentOffset = offset;
       let remainder = staticSize;
 
-      for (let [name, type] of Object.entries(scheme)) {
+      for (let [name, type] of Object.entries(schema)) {
         const { value, size } = type.fromBuffer(buffer, currentOffset, {
           reservedSize: remainder,
         });
@@ -44,7 +44,7 @@ function struct<T extends Scheme>(scheme: T): DataType<FixOptional<ResultObjectO
     toBuffer(data) {
       let parts = [];
 
-      for (let [name, type] of Object.entries(scheme)) {
+      for (let [name, type] of Object.entries(schema)) {
         // @ts-ignore we should be able to index into this type
         const current = data[name];
         const part = type.toBuffer(current);
@@ -89,18 +89,18 @@ const signedByte: DataType<number> = {
   },
 };
 
-function groupBits<T extends Record<string, number>>(scheme: T): DataType<T> {
-  const bits = Object.values(scheme).reduce((sum, numBits) => sum + numBits, 0);
+function groupBits<T extends Record<string, number>>(schema: T): DataType<T> {
+  const bits = Object.values(schema).reduce((sum, numBits) => sum + numBits, 0);
   const size = Math.ceil(bits / 8);
 
   return {
     staticSize: size,
 
     fromBuffer(buffer, offset) {
-      let result: T = {} as any;
+      let result = {} as T;
       let currentBitPosition = 0;
 
-      for (let [name, numBits] of Object.entries(scheme)) {
+      for (let [name, numBits] of Object.entries(schema)) {
         const finalBitPosition = currentBitPosition + numBits;
 
         const startByte = Math.floor(currentBitPosition / 8);
@@ -124,7 +124,7 @@ function groupBits<T extends Record<string, number>>(scheme: T): DataType<T> {
       let result = Buffer.alloc(size);
       let currentBitPosition = 0;
 
-      for (let [name, numBits] of Object.entries(scheme)) {
+      for (let [name, numBits] of Object.entries(schema)) {
         const finalBitPosition = currentBitPosition + numBits;
 
         const startByte = Math.floor(currentBitPosition / 8);

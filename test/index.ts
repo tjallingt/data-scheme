@@ -4,21 +4,21 @@ import { strict as assert } from 'assert';
 
 import { define, types } from '../src/index';
 
-describe('data-scheme can define parsers', () => {
+describe('data-schema can define parsers', () => {
   it('supports simple types', () => {
-    const scheme = define(types.struct({
+    const schema = define(types.struct({
       first: types.byte,
       second: types.byte,
     }));
 
-    const result = scheme.fromBuffer(Buffer.from('0102', 'hex'));
+    const result = schema.fromBuffer(Buffer.from('0102', 'hex'));
 
     assert.deepStrictEqual(result, {
       first: 0x01,
       second: 0x02,
     });
 
-    const output = scheme.toBuffer({
+    const output = schema.toBuffer({
       first: 0x01,
       second: 0x02,
     });
@@ -29,17 +29,17 @@ describe('data-scheme can define parsers', () => {
   // ====================================================================
 
   it('supports an unsized buffer', () => {
-    const scheme = define(types.struct({
+    const schema = define(types.struct({
       buf: types.buffer(),
     }));
 
-    const result = scheme.fromBuffer(Buffer.from('010203040506', 'hex'));
+    const result = schema.fromBuffer(Buffer.from('010203040506', 'hex'));
 
     assert.deepStrictEqual(result, {
       buf: Buffer.from('010203040506', 'hex'),
     });
 
-    const output = scheme.toBuffer({
+    const output = schema.toBuffer({
       buf: Buffer.from('010203040506', 'hex'),
     });
 
@@ -49,13 +49,13 @@ describe('data-scheme can define parsers', () => {
   // ====================================================================
 
   it('supports an unsized buffer with parameters before and after', () => {
-    const scheme = define(types.struct({
+    const schema = define(types.struct({
       before: types.byte,
       buf: types.buffer(),
       after: types.byte,
     }));
 
-    const result = scheme.fromBuffer(Buffer.from('010203040506', 'hex'));
+    const result = schema.fromBuffer(Buffer.from('010203040506', 'hex'));
 
     assert.deepStrictEqual(result, {
       before: 0x01,
@@ -63,7 +63,7 @@ describe('data-scheme can define parsers', () => {
       after: 0x06,
     });
 
-    const output = scheme.toBuffer({
+    const output = schema.toBuffer({
       before: 0x01,
       buf: Buffer.from('02030405', 'hex'),
       after: 0x06,
@@ -75,17 +75,17 @@ describe('data-scheme can define parsers', () => {
   // ====================================================================
 
   it('supports a buffer with static size', () => {
-    const scheme = define(types.struct({
+    const schema = define(types.struct({
       buf: types.fixedSizeBuffer(3),
     }));
 
-    const result = scheme.fromBuffer(Buffer.from('010203040506', 'hex'));
+    const result = schema.fromBuffer(Buffer.from('010203040506', 'hex'));
 
     assert.deepStrictEqual(result, {
       buf: Buffer.from('010203', 'hex'),
     });
 
-    const output = scheme.toBuffer({
+    const output = schema.toBuffer({
       buf: Buffer.from('010203040506', 'hex'),
     });
 
@@ -95,7 +95,7 @@ describe('data-scheme can define parsers', () => {
   // ====================================================================
 
   it('supports grouped bits', () => {
-    const scheme = define(types.struct({
+    const schema = define(types.struct({
       properties: types.groupBits({
         first: 4,
         second: 8,
@@ -103,7 +103,7 @@ describe('data-scheme can define parsers', () => {
       }),
     }));
 
-    const result = scheme.fromBuffer(Buffer.from([0b1001_0011, 0b1100_0110]));
+    const result = schema.fromBuffer(Buffer.from([0b1001_0011, 0b1100_0110]));
 
     assert.deepStrictEqual(result, {
       properties: {
@@ -113,7 +113,7 @@ describe('data-scheme can define parsers', () => {
       },
     });
 
-    const output = scheme.toBuffer({
+    const output = schema.toBuffer({
       properties: {
         first: 0b1001,
         second: 0b0011_1100,
@@ -127,17 +127,17 @@ describe('data-scheme can define parsers', () => {
   // ====================================================================
 
   it('supports an array of uint', () => {
-    const scheme = define(types.struct({
+    const schema = define(types.struct({
       list: types.array(types.bigEndian.uint16),
     }));
 
-    const result = scheme.fromBuffer(Buffer.from('010203040506', 'hex'));
+    const result = schema.fromBuffer(Buffer.from('010203040506', 'hex'));
 
     assert.deepStrictEqual(result, {
       list: [0x0102, 0x0304, 0x0506],
     });
 
-    const output = scheme.toBuffer({
+    const output = schema.toBuffer({
       list: [0x0102, 0x0304, 0x0506],
     });
 
@@ -147,17 +147,17 @@ describe('data-scheme can define parsers', () => {
   // ====================================================================
 
   it('supports an array of structs', () => {
-    const scheme = define(types.struct({
+    const schema = define(types.struct({
       list: types.array(types.struct({ value: types.byte })),
     }));
 
-    const result = scheme.fromBuffer(Buffer.from('0102', 'hex'));
+    const result = schema.fromBuffer(Buffer.from('0102', 'hex'));
 
     assert.deepStrictEqual(result, {
       list: [{ value: 0x01 }, { value: 0x02 }],
     });
 
-    const output = scheme.toBuffer({
+    const output = schema.toBuffer({
       list: [{ value: 0x01 }, { value: 0x02 }],
     });
 
@@ -167,7 +167,7 @@ describe('data-scheme can define parsers', () => {
   // ====================================================================
 
   it('supports an array with parameters before and after', () => {
-    const scheme = define(types.struct({
+    const schema = define(types.struct({
       before: types.byte,
       list: types.array(
         types.struct({
@@ -178,7 +178,7 @@ describe('data-scheme can define parsers', () => {
       after: types.bigEndian.uint16,
     }));
 
-    const result = scheme.fromBuffer(Buffer.from('01020304050607', 'hex'));
+    const result = schema.fromBuffer(Buffer.from('01020304050607', 'hex'));
 
     assert.deepStrictEqual(result, {
       before: 0x01,
@@ -189,7 +189,7 @@ describe('data-scheme can define parsers', () => {
       after: 0x0607,
     });
 
-    const output = scheme.toBuffer({
+    const output = schema.toBuffer({
       before: 0x01,
       list: [
         { one: 0x02, two: 0x03 },
@@ -202,33 +202,33 @@ describe('data-scheme can define parsers', () => {
   });
 
   it('supports optional types', () => {
-    const scheme = define(types.struct({
+    const schema = define(types.struct({
       before: types.byte,
       optionalValue: types.optional(types.byte),
     }));
 
-    const resultPresent = scheme.fromBuffer(Buffer.from('0102', 'hex'));
+    const resultPresent = schema.fromBuffer(Buffer.from('0102', 'hex'));
 
     assert.deepStrictEqual(resultPresent, {
       before: 0x01,
       optionalValue: 0x02,
     });
 
-    const resultNotPresent = scheme.fromBuffer(Buffer.from('00', 'hex'));
+    const resultNotPresent = schema.fromBuffer(Buffer.from('00', 'hex'));
 
     assert.deepStrictEqual(resultNotPresent, {
       before: 0x00,
       optionalValue: undefined,
     });
 
-    const outputPresent = scheme.toBuffer({
+    const outputPresent = schema.toBuffer({
       before: 0x01,
       optionalValue: 0x02,
     });
 
     assert.deepStrictEqual(outputPresent, Buffer.from('0102', 'hex'));
 
-    const outputNotPresent = scheme.toBuffer({
+    const outputNotPresent = schema.toBuffer({
       before: 0x01,
     });
 
