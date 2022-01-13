@@ -172,6 +172,18 @@ function optional<T>(type: DataType<T>): DataType<T | undefined> {
   };
 }
 
+const none: DataType<undefined> = {
+  staticSize: 0,
+
+  fromBuffer(buffer, offset, context) {
+    return { size: 0, value: undefined };
+  },
+
+  toBuffer(data) {
+    return Buffer.alloc(0);
+  },
+};
+
 export const types = {
   byte,
   signedByte,
@@ -180,8 +192,37 @@ export const types = {
   ...arrayLikes,
   groupBits,
   optional,
+  none,
   struct,
 };
+
+export function doublepass<One, Two, Result extends Two>(
+  type: DataType<One>,
+  createSecondType: (data: One) => DataType<Two>,
+  mapOutput: (one: One, two: Two) => Result,
+  mapInput: (input: Result) => One,
+): DataType<Result> {
+  return {
+    staticSize: NOT_STATIC,
+
+    fromBuffer(buffer, offset, context) {
+      const result = type.fromBuffer(buffer, offset, context);
+      const second = createSecondType(result.value);
+      const secondOffset = offset + result.size;
+      const secondResult = second.fromBuffer(buffer, secondOffset, context);
+      return {
+        size: result.size + secondResult.size,
+        value: mapOutput(result.value, secondResult.value),
+      };
+    },
+
+    toBuffer(data) {
+      const input = mapInput(data);
+      const second = createSecondType(input);
+      return Buffer.concat([type.toBuffer(input), second.toBuffer(data)]);
+    },
+  };
+}
 
 export function define<T>(type: DataType<T>) {
   return {

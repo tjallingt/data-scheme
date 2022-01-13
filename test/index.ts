@@ -1,8 +1,9 @@
 'use strict';
 
 import { strict as assert } from 'assert';
+import { type } from 'os';
 
-import { define, types } from '../src/index';
+import { define, types, doublepass } from '../src/index';
 
 describe('data-schema can define parsers', () => {
   it('supports simple types', () => {
@@ -233,5 +234,44 @@ describe('data-schema can define parsers', () => {
     });
 
     assert.deepStrictEqual(outputNotPresent, Buffer.from('01', 'hex'));
+  });
+
+  it('supports staged parsing', () => {
+    const sizePrefixedString = doublepass(
+      types.byte,
+      (size) => types.fixedSizeString(size),
+      (size, text) => text,
+      (text) => text.length,
+    );
+
+    const schema = define(types.struct({
+      first: sizePrefixedString,
+      second: sizePrefixedString,
+    }))
+
+    const result = schema.fromBuffer(Buffer.from('04746573740431323334', 'hex'));
+
+    assert.deepStrictEqual(result, { first: 'test', second: '1234' });
+
+    const output = schema.toBuffer({ first: 'test', second: '1234' });
+
+    assert.deepStrictEqual(output, Buffer.from('04746573740431323334', 'hex'));
+  });
+
+  it('supports staged parsing 2', () => {
+    const schema = define(doublepass(
+      types.struct({ isPresent: types.byte, first: types.byte }),
+      (data) => types.struct({ second: data.isPresent ? types.byte : types.none }),
+      (first, second) => ({ first: first.first, second: second.second }),
+      (data) => ({ ...data, isPresent: data.second !== undefined ? 255 : 0 }),
+    ));
+
+    const result = schema.fromBuffer(Buffer.from('ff0102', 'hex'));
+
+    assert.deepStrictEqual(result, { first: 0x01, second: 0x02 });
+
+    const output = schema.toBuffer({ first: 0x01, second: 0x02 });
+
+    assert.deepStrictEqual(output, Buffer.from('ff0102', 'hex'));
   });
 });
